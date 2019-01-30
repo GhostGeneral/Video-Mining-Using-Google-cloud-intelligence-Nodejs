@@ -1,0 +1,43 @@
+{
+  "name": "VideoMine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Awotundun Afeez",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
+    "awesome-phonenumber": "^2.2.6",
+    "aws-sdk": "^2.345.0",
+    "basic-auth": "^2.0.1",
+    "bcryptjs": "^2.4.3",
+    "btoa": "^1.2.1",
+    "crypto-js": "^3.1.9-1",
+    "dotenv": "^5.0.1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "express-fileupload": "^0.4.0",
+    "handlebars": "^4.0.12",
+    "html-pdf": "^2.2.0",
+    "js-base64": "^2.4.9",
+    "json2csv": "^4.3.2",
+    "jsonwebtoken": "^8.2.1",
+    "moment": "^2.23.0",
+    "moment-timezone": "^0.5.21",
+    "morgan": "^1.9.0",
+    "mysql": "^2.15.0",
+    "mysql2": "^1.5.3",
+    "node-geocoder": "^3.22.0",
+    "nodemailer": "^4.6.4",
+    "numeral": "^2.0.6",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "sequelize": "^4.41.0",
+    "socket.io": "^2.1.1",
+    "utf8": "^3.0.0"
+  }
+}

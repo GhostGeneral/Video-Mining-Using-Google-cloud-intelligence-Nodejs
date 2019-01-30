@@ -1,0 +1,101 @@
+<% include ../Partials/header %>
+
+<main role="main">
+    <section>
+        <div class="container">
+            <div class="table-wrapper">
+                <div class="table-title">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h2>Create New Video</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <form role="form" id="newPool" encType="multipart/form-data">
+                    
+                   
+                    
+                    <div class="row">
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input name="title" class="form-control" type="text" id="title" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input name="video" class="form-control" id="video" type="file" />
+                            </div>
+                        </div>
+                      
+                        
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-dark">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+
+<% include ../Partials/footer %>
+<% include ../Partials/datepicker %>
+
+<script>
+
+  
+    
+    $('#newPool').validate({
+        rules: {
+            title: {required: true},
+            video: {required: true},
+          
+        },
+        messages: {
+            title: {required: "Title is required"},
+            video: {required: "Video  is required"},
+            
+        },
+        submitHandler: createnewPool
+    });
+
+    function createnewPool(form){
+
+        var formdata = new FormData(form);
+        
+        //start preloader
+        window.startPreloader();
+
+        var settings = {
+            url: '/sendform',
+            data: formdata,
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST'
+        };
+        $.ajax(settings).done(function (response) {
+            
+            //remove preloader
+            window.removePreloader();
+            
+            var msgType = (response.success) ? "success" : "error";
+            swal("", response.message, msgType).then(function(){
+                if(response.success){
+                    window.location.href = '/';
+                }
+            });
+        }).fail(function(error){
+            console.log("Error",error);
+        
+            //remove preloader
+            window.removePreloader();
+            swal("", "Something went wrong while attempting to send request to server", "error");
+        });
+    }
+</script>

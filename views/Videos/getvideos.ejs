@@ -1,0 +1,202 @@
+<% include ../Partials/header %>
+
+<main role="main">
+    <section>
+        <div class="container">
+            <table class="table table-sriped">
+                <thead>
+                        <tr>
+                                <th>Video name</th>
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+                </thead>
+                <tbody  id="tofaAjaxResponse">
+                    
+                </tbody>
+            </table>
+            <div class="clearfix">
+                    <div class="hint-text">Showing <b id="totalData"></b> out of <b id="totalRecord"></b> entries</div>
+                    <ul class="pagination" id="tofaPagination"></ul>
+                </div>
+        </div>
+    </section>
+</main>
+
+<% include ../Partials/footer %>
+<% include ../Partials/datepicker %>
+
+<!--Pagination-->
+<script src="/js/twbs-pagination/jquery.twbsPagination.min.js"></script>
+
+<script>
+    
+    var page = '<%- query.page %>';
+    var pageStart = 1;
+    var offset = 0;
+    var limit = 20;
+    var filterCategories = [];
+    var $responseHTML = $('#tofaAjaxResponse');
+    if(page !== ''){
+        if(page > 1){
+            pageStart = parseInt(page);
+            offset = limit * (pageStart - 1);
+        }
+    }
+
+    function getDataFromServer(offset = 0, limit = 20, callback){
+        var settings = {
+            url: `/videos`,
+            method: 'GET',
+            cache: false,contentType: false,processData: false,
+        }
+
+        $.ajax(settings).done(function(response){
+            callback(response);
+        })
+    }
+
+    function GeneratePagination(total = 0){
+        if(total >= limit){
+            $('#tofaPagination').twbsPagination({
+                totalPages: total,
+                startPage: window.pageStart,
+                visiblePages: 5,
+                first: null,
+                last: null,
+                prev: 'Previous',
+                next: 'Next',
+                hideOnlyOnePage: true,
+                initiateStartPageClick: false,
+                onPageClick: function (event, page) {
+                    history.pushState({pageId: page}, '', `?page=${page}`);
+                    
+                    pageStart = parseInt(page);
+                    offset = limit * (pageStart - 1);
+                    processThisData();
+                }
+            });
+        }
+    }
+
+    function TemplateThisData(response = []){
+        var responseHTML = `<tr class="text-center"><td colspan="8">No data found</td></tr>`;
+      console.log(response);
+        if(response.success){
+            if(response.data.rows.length > 0){
+                var responseData = response.data.rows;
+                responseHTML = '';
+                for(var i in responseData){
+                    
+                    video = responseData[i];
+                  
+        
+                    console.log(video.id);
+                   
+                    responseHTML += `
+                    <tr>
+                        <td>
+                            <b>Name:</b> ${video.name}<br>
+                            
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button id="actionsButton" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="actionsButton">
+
+                                    <a href="/video/view/${video.id}" data-toggle="modal" data-target="#adminModal" data-remote="false" data-modal-size="modal-lg" title="Video Details" class="view dropdown-item" style="font-size: 12px;font-weight: 400 !important;">View</a>
+
+                                   
+                                </div>
+                            </div>
+                        </td>
+                    </tr> 
+                    `;
+                }
+
+
+                   //generate pagination
+                   var totalData = response.data.count;
+                var totalPages = Math.round(totalData / limit);
+                $('#totalData').html(responseData.length);
+                $('#totalRecord').html(totalData);
+                //GeneratePagination(totalPages);
+                GeneratePagination(totalData);
+                
+            }
+        }
+
+        $responseHTML.html(responseHTML);
+    }
+
+    function processThisData(){
+        $responseHTML.html(`<div style="text-align:center;font-size:40px;padding:5%;"> <i class="fa fa-spin fa-spinner"></i>  </div>`);
+
+        getDataFromServer(window.offset, limit, function(response){
+            TemplateThisData(response);
+        });
+    }
+
+    $('body').on('click', '.deletePool', function(){
+        var id = $(this).attr('data-id');
+        if(!id) return swal('Please provide pool id');
+
+        if(confirm('Are you sure you want to delete this pool?')){
+            
+            window.startPreloader();
+            
+            $.get('/pool/generateDeleteOTP?id=' + id)
+            .then(function(response){
+                if(!response.success) return swal('', response.message, 'error');
+
+                window.removePreloader();
+
+                swal("Enter the OTP code sent to Admin", {
+                    content: "input",
+                })
+                .then((value) => {
+                    window.startPreloader();
+
+                    //process delete
+                    $.post('/pool/delete', {id: id, otp: value}, function(response){
+                        window.removePreloader();
+                        
+                        var msgType = (response.success) ? 'success' : 'error';
+
+                        swal('', response.message, msgType);
+                        
+                        if(response.success) return location.reload();
+                    })
+                });
+            }).catch(function(err){
+                window.removePreloader();
+                return swal('', 'Error occurred while generating OTP', 'error');
+            })
+        }
+        return false;
+    });
+
+    $('body').on('click', '.confirmPayout', function(){
+        var id = $(this).attr('data-id');
+        if(!id) return swal('Please provide pool id');
+
+        if(confirm("Please confirm you have paid this investor")){
+            window.startPreloader();
+            $.post('/pool/confirmPayout', {id: id}, function(response){
+                window.removePreloader();
+                
+                if(!response.success) return swal('', response.message, 'error');
+
+                return location.reload();
+            })
+        }
+
+        return false;
+    });
+
+
+    //main onload call
+    processThisData();
+</script>
